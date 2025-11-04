@@ -25,13 +25,13 @@ const getPriorityFromProjectType = (type: string) => {
     case "Security":
       return { label: "HIGH", bgColor: "bg-red-100", textColor: "text-red-700" };
     case "Product Innovation":
-      return { label: "MEDIUM", bgColor: "bg-yellow-100", textColor: "text-yellow-700" };
+      return { label: "MEDIUM", bgColor: "bg-[rgb(255,244,220)]", textColor: "text-yellow-700" };
     case "Productivity":
       return { label: "LOW", bgColor: "bg-green-100", textColor: "text-green-700" };
     case "Visa University":
-      return { label: "MEDIUM", bgColor: "bg-yellow-100", textColor: "text-yellow-700" };
+      return { label: "MEDIUM", bgColor: "bg-[rgb(255,244,220)]", textColor: "text-yellow-700" };
     default:
-      return { label: "MEDIUM", bgColor: "bg-yellow-100", textColor: "text-yellow-700" };
+      return { label: "MEDIUM", bgColor: "bg-[rgb(255,244,220)]", textColor: "text-yellow-700" };
   }
 };
 
