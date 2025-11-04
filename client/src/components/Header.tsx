@@ -1,6 +1,5 @@
 import visaLogo from "@assets/visa-logo-white_1762233670682.png";
 import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 
 export function Header() {
   const [location] = useLocation();
@@ -19,16 +18,19 @@ export function Header() {
         AIStandup
       </h1>
       
-      <nav className="flex gap-3 ml-auto">
+      <nav className="flex gap-6 ml-auto">
         {navLinks.map((link) => (
           <Link key={link.href} href={link.href}>
-            <Button
-              variant={location === link.href ? "secondary" : "ghost"}
-              className={location === link.href ? "bg-white/20 text-white hover:bg-white/30" : "text-white hover:bg-white/10"}
+            <span
+              className={`text-sm font-medium cursor-pointer transition-colors ${
+                location === link.href
+                  ? 'text-white border-b-2 border-white pb-1'
+                  : 'text-white/70 hover:text-white'
+              }`}
               data-testid={`nav-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
               {link.label}
-            </Button>
+            </span>
           </Link>
         ))}
       </nav>
