@@ -4,6 +4,7 @@ import { Link, useParams } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
@@ -17,6 +18,8 @@ import {
   Sparkles,
   Loader2,
   ExternalLink,
+  Users,
+  Link as LinkIcon,
 } from "lucide-react";
 import type { Project, StatusUpdate, InsertStatusUpdate } from "@shared/schema";
 
@@ -234,44 +237,69 @@ export default function ProjectDetail() {
 
         <div className="mb-6">
           <div className="flex items-start justify-between mb-4">
-            <h2 className="text-2xl font-bold text-foreground" data-testid="text-project-title">
-              {project.title}
-            </h2>
-            <a
-              href={project.jiraLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-primary hover:underline"
-              data-testid="link-jira"
-            >
-              <ExternalLink className="h-4 w-4" />
-              View in Jira
-            </a>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-foreground mb-2" data-testid="text-project-title">
+                {project.title}
+              </h2>
+              <Badge variant="secondary">{project.projectType}</Badge>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-4 pb-6 border-b">
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Due:</span>
-              <span className="font-medium text-foreground">{project.dueDate}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-6 border-b">
+            <div className="flex items-start gap-2 text-sm">
+              <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="text-muted-foreground block">Solution Architect</span>
+                <span className="font-medium text-foreground">{project.solutionArchitect}</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Lead:</span>
-              <span className="font-medium text-foreground">{project.lead}</span>
+            <div className="flex items-start gap-2 text-sm">
+              <Code2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="text-muted-foreground block">Project Lead</span>
+                <span className="font-medium text-foreground">{project.projectLead}</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm">
-              <Code2 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Developer:</span>
-              <span className="font-medium text-foreground">{project.developer}</span>
+            <div className="flex items-start gap-2 text-sm">
+              <Users className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="text-muted-foreground block">Team Members</span>
+                <span className="font-medium text-foreground">{project.teamMembers}</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm">
-              <Tag className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Category:</span>
-              <span className="font-medium text-foreground">{project.category}</span>
+            <div className="flex items-start gap-2 text-sm">
+              <Tag className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="text-muted-foreground block">Stakeholders</span>
+                <span className="font-medium text-foreground">{project.stakeholders}</span>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2 text-sm md:col-span-2">
+              <LinkIcon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={project.wikiLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline flex items-center gap-1"
+                >
+                  Wiki
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+                <a
+                  href={project.usefulLinks}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline flex items-center gap-1"
+                >
+                  Docs
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
             </div>
           </div>
         </div>

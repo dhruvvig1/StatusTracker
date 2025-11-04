@@ -14,18 +14,22 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Calendar, User, Code2, Tag, Plus, ExternalLink } from "lucide-react";
+import { Calendar, User, Code2, Tag, Plus, ExternalLink, Users } from "lucide-react";
 import type { Project, InsertProject, StatusUpdate } from "@shared/schema";
 
 export default function Dashboard() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<InsertProject>({
     title: "",
-    jiraLink: "",
-    dueDate: "",
-    lead: "",
-    developer: "",
-    category: "",
+    projectType: "",
+    status: "In Progress",
+    solutionArchitect: "",
+    teamMembers: "",
+    projectLead: "",
+    stakeholders: "",
+    wikiLink: "",
+    usefulLinks: "",
+    modified: new Date().toISOString().split('T')[0],
   });
 
   const { toast } = useToast();
@@ -53,11 +57,15 @@ export default function Dashboard() {
       
       setFormData({
         title: "",
-        jiraLink: "",
-        dueDate: "",
-        lead: "",
-        developer: "",
-        category: "",
+        projectType: "",
+        status: "In Progress",
+        solutionArchitect: "",
+        teamMembers: "",
+        projectLead: "",
+        stakeholders: "",
+        wikiLink: "",
+        usefulLinks: "",
+        modified: new Date().toISOString().split('T')[0],
       });
       setShowForm(false);
     } catch (error) {
@@ -103,30 +111,11 @@ export default function Dashboard() {
             <CardHeader>
               <h3 className="text-lg font-semibold">Add New Project</h3>
               <p className="text-sm text-muted-foreground">
-                Enter a Jira or Jira Align link to add a project
+                Enter project details to add it to the tracker
               </p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="jiraLink">Jira Link or Jira Align Link *</Label>
-                  <Input
-                    id="jiraLink"
-                    type="url"
-                    placeholder="https://jira.example.com/browse/PROJECT-123"
-                    value={formData.jiraLink}
-                    onChange={(e) =>
-                      setFormData({ ...formData, jiraLink: e.target.value })
-                    }
-                    required
-                    data-testid="input-jira-link"
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Example: https://jira.example.com/browse/PROJECT-123
-                  </p>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="title">Project Title *</Label>
@@ -143,69 +132,112 @@ export default function Dashboard() {
                   </div>
 
                   <div>
-                    <Label htmlFor="dueDate">Due Date *</Label>
-                    <Input
-                      id="dueDate"
-                      type="date"
-                      value={formData.dueDate}
-                      onChange={(e) =>
-                        setFormData({ ...formData, dueDate: e.target.value })
+                    <Label htmlFor="projectType">Project Type *</Label>
+                    <Select
+                      value={formData.projectType}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, projectType: value })
                       }
                       required
-                      data-testid="input-due-date"
-                    />
+                    >
+                      <SelectTrigger id="projectType" data-testid="select-project-type">
+                        <SelectValue placeholder="Select project type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Product Innovation">Product Innovation</SelectItem>
+                        <SelectItem value="Productivity">Productivity</SelectItem>
+                        <SelectItem value="Security">Security</SelectItem>
+                        <SelectItem value="Visa University">Visa University</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="lead">Lead *</Label>
+                    <Label htmlFor="solutionArchitect">Solution Architect *</Label>
                     <Input
-                      id="lead"
+                      id="solutionArchitect"
                       placeholder="Sarah Johnson"
-                      value={formData.lead}
+                      value={formData.solutionArchitect}
                       onChange={(e) =>
-                        setFormData({ ...formData, lead: e.target.value })
+                        setFormData({ ...formData, solutionArchitect: e.target.value })
                       }
                       required
-                      data-testid="input-lead"
+                      data-testid="input-solution-architect"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="developer">Developer *</Label>
+                    <Label htmlFor="projectLead">Project Lead *</Label>
                     <Input
-                      id="developer"
+                      id="projectLead"
                       placeholder="Mike Chen"
-                      value={formData.developer}
+                      value={formData.projectLead}
                       onChange={(e) =>
-                        setFormData({ ...formData, developer: e.target.value })
+                        setFormData({ ...formData, projectLead: e.target.value })
                       }
                       required
-                      data-testid="input-developer"
+                      data-testid="input-project-lead"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <Label htmlFor="category">Category *</Label>
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, category: value })
+                    <Label htmlFor="teamMembers">Team Members *</Label>
+                    <Input
+                      id="teamMembers"
+                      placeholder="John Doe, Jane Smith, Bob Wilson"
+                      value={formData.teamMembers}
+                      onChange={(e) =>
+                        setFormData({ ...formData, teamMembers: e.target.value })
                       }
                       required
-                    >
-                      <SelectTrigger id="category" data-testid="select-category">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-                        <SelectItem value="Frontend">Frontend</SelectItem>
-                        <SelectItem value="Backend">Backend</SelectItem>
-                        <SelectItem value="Mobile">Mobile</SelectItem>
-                        <SelectItem value="Data">Data</SelectItem>
-                        <SelectItem value="Security">Security</SelectItem>
-                        <SelectItem value="DevOps">DevOps</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      data-testid="input-team-members"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label htmlFor="stakeholders">Stakeholders *</Label>
+                    <Input
+                      id="stakeholders"
+                      placeholder="Product Team, Engineering Leadership"
+                      value={formData.stakeholders}
+                      onChange={(e) =>
+                        setFormData({ ...formData, stakeholders: e.target.value })
+                      }
+                      required
+                      data-testid="input-stakeholders"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="wikiLink">Wiki Link *</Label>
+                    <Input
+                      id="wikiLink"
+                      type="url"
+                      placeholder="https://wiki.visa.com/project"
+                      value={formData.wikiLink}
+                      onChange={(e) =>
+                        setFormData({ ...formData, wikiLink: e.target.value })
+                      }
+                      required
+                      data-testid="input-wiki-link"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="usefulLinks">Useful Links *</Label>
+                    <Input
+                      id="usefulLinks"
+                      type="url"
+                      placeholder="https://docs.visa.com/project"
+                      value={formData.usefulLinks}
+                      onChange={(e) =>
+                        setFormData({ ...formData, usefulLinks: e.target.value })
+                      }
+                      required
+                      data-testid="input-useful-links"
+                      className="font-mono text-sm"
+                    />
                   </div>
                 </div>
 
@@ -268,31 +300,33 @@ export default function Dashboard() {
                 <Card className="hover-elevate active-elevate-2 cursor-pointer h-full transition-shadow duration-200">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-foreground line-clamp-2 flex-1">
-                        {project.title}
-                      </h3>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-foreground line-clamp-2">
+                          {project.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {project.projectType}
+                        </p>
+                      </div>
                       <ExternalLink className="h-4 w-4 text-muted-foreground ml-2 flex-shrink-0" />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="grid grid-cols-1 gap-2 mb-3">
                       <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground">{project.dueDate}</span>
+                        <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-muted-foreground text-xs">SA:</span>
+                        <span className="text-foreground truncate">{project.solutionArchitect}</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-sm">
-                        <Tag className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground">{project.category}</span>
+                        <Code2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-muted-foreground text-xs">Lead:</span>
+                        <span className="text-foreground truncate">{project.projectLead}</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-sm">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground truncate">{project.lead}</span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-sm">
-                        <Code2 className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground truncate">{project.developer}</span>
+                        <Tag className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-foreground">{project.status}</span>
                       </div>
                     </div>
 
