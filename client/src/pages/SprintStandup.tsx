@@ -29,7 +29,7 @@ interface JiraTicket {
 const mockTickets: JiraTicket[] = [
   {
     id: "1",
-    key: "VISA-101",
+    key: "VASINNOV-101",
     title: "Implement OAuth 2.0 authentication",
     assignee: "John Doe",
     status: "inprogress",
@@ -38,7 +38,7 @@ const mockTickets: JiraTicket[] = [
   },
   {
     id: "2",
-    key: "VISA-102",
+    key: "VASINNOV-102",
     title: "Fix payment processing bug",
     assignee: "Jane Smith",
     status: "todo",
@@ -47,7 +47,7 @@ const mockTickets: JiraTicket[] = [
   },
   {
     id: "3",
-    key: "VISA-103",
+    key: "VASINNOV-103",
     title: "Update API documentation",
     assignee: "Bob Johnson",
     status: "complete",
@@ -56,7 +56,7 @@ const mockTickets: JiraTicket[] = [
   },
   {
     id: "4",
-    key: "VISA-104",
+    key: "VASINNOV-104",
     title: "Database migration script",
     assignee: "Alice Williams",
     status: "inprogress",
@@ -65,7 +65,7 @@ const mockTickets: JiraTicket[] = [
   },
   {
     id: "5",
-    key: "VISA-105",
+    key: "VASINNOV-105",
     title: "Security audit review",
     assignee: "Charlie Brown",
     status: "todo",
@@ -74,12 +74,21 @@ const mockTickets: JiraTicket[] = [
   },
   {
     id: "6",
-    key: "VISA-106",
+    key: "VASINNOV-106",
     title: "Performance optimization",
     assignee: "David Lee",
     status: "complete",
     description: "Optimize database queries for dashboard page",
     statusUpdates: ["Reduced query time by 60%", "Deployed to production"],
+  },
+  {
+    id: "7",
+    key: "VASINNOV-107",
+    title: "Frontend UI/UX improvements",
+    assignee: "Sarah Martinez",
+    status: "todo",
+    description: "Enhance user interface with modern design patterns",
+    statusUpdates: [],
   },
 ];
 
@@ -561,7 +570,7 @@ export default function SprintStandup() {
                   onClick={handleRefineText}
                   variant="outline"
                   size="icon"
-                  disabled={!statusText.trim() || isRefining}
+                  disabled={!statusText?.trim() || isRefining}
                   data-testid="button-refine-text"
                 >
                   {isRefining ? (
@@ -573,7 +582,7 @@ export default function SprintStandup() {
                 
                 <Button
                   onClick={handleAddStatus}
-                  disabled={!selectedTicket || !statusText.trim()}
+                  disabled={!selectedTicket || !statusText?.trim()}
                   data-testid="button-add-status"
                 >
                   Add Status
