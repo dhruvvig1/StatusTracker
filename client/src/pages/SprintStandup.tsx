@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type DragEvent } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -118,6 +118,7 @@ export default function SprintStandup() {
   const [isRecording, setIsRecording] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(getTimeUntilDeadline());
+  const [draggedTicketId, setDraggedTicketId] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
@@ -323,6 +324,54 @@ export default function SprintStandup() {
     });
   };
 
+  const handleDragStart = (ticketId: string) => {
+    setDraggedTicketId(ticketId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTicketId(null);
+  };
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: DragEvent, newStatus: "todo" | "inprogress" | "complete") => {
+    e.preventDefault();
+    
+    if (!draggedTicketId) return;
+
+    const draggedTicket = tickets.find(t => t.id === draggedTicketId);
+    if (!draggedTicket) return;
+
+    // Only update if status actually changed
+    if (draggedTicket.status === newStatus) {
+      setDraggedTicketId(null);
+      return;
+    }
+
+    setTickets(prevTickets =>
+      prevTickets.map(ticket =>
+        ticket.id === draggedTicketId
+          ? { ...ticket, status: newStatus }
+          : ticket
+      )
+    );
+
+    const statusLabels = {
+      todo: "To Do",
+      inprogress: "In Progress",
+      complete: "Complete",
+    };
+
+    toast({
+      title: "Ticket moved",
+      description: `${draggedTicket.key} moved to ${statusLabels[newStatus]}`,
+    });
+
+    setDraggedTicketId(null);
+  };
+
   const selectedTicket = tickets.find(t => t.id === selectedTicketId);
 
   const ticketsByStatus = {
@@ -372,7 +421,11 @@ export default function SprintStandup() {
         {/* Kanban Board - 3 columns */}
         <div className="grid grid-cols-3 gap-6 mb-8">
           {/* To Do Column */}
-          <div>
+          <div
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, "todo")}
+            className="min-h-[200px]"
+          >
             <div className="flex items-center gap-2 mb-4">
               <div className="h-2 w-2 rounded-full bg-gray-400"></div>
               <h3 className="text-sm font-semibold text-foreground">
@@ -383,9 +436,12 @@ export default function SprintStandup() {
               {ticketsByStatus.todo.map(ticket => (
                 <Card
                   key={ticket.id}
-                  className={`cursor-pointer hover-elevate active-elevate-2 transition-all ${
+                  draggable={true}
+                  onDragStart={() => handleDragStart(ticket.id)}
+                  onDragEnd={handleDragEnd}
+                  className={`cursor-move hover-elevate active-elevate-2 transition-all ${
                     selectedTicketId === ticket.id ? 'ring-2 ring-primary' : ''
-                  }`}
+                  } ${draggedTicketId === ticket.id ? 'opacity-50' : ''}`}
                   onClick={() => setSelectedTicketId(ticket.id)}
                   data-testid={`ticket-${ticket.key}`}
                 >
@@ -416,7 +472,11 @@ export default function SprintStandup() {
           </div>
 
           {/* In Progress Column */}
-          <div>
+          <div
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, "inprogress")}
+            className="min-h-[200px]"
+          >
             <div className="flex items-center gap-2 mb-4">
               <div className="h-2 w-2 rounded-full bg-blue-500"></div>
               <h3 className="text-sm font-semibold text-foreground">
@@ -427,9 +487,12 @@ export default function SprintStandup() {
               {ticketsByStatus.inprogress.map(ticket => (
                 <Card
                   key={ticket.id}
-                  className={`cursor-pointer hover-elevate active-elevate-2 transition-all ${
+                  draggable={true}
+                  onDragStart={() => handleDragStart(ticket.id)}
+                  onDragEnd={handleDragEnd}
+                  className={`cursor-move hover-elevate active-elevate-2 transition-all ${
                     selectedTicketId === ticket.id ? 'ring-2 ring-primary' : ''
-                  }`}
+                  } ${draggedTicketId === ticket.id ? 'opacity-50' : ''}`}
                   onClick={() => setSelectedTicketId(ticket.id)}
                   data-testid={`ticket-${ticket.key}`}
                 >
@@ -460,7 +523,11 @@ export default function SprintStandup() {
           </div>
 
           {/* Complete Column */}
-          <div>
+          <div
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, "complete")}
+            className="min-h-[200px]"
+          >
             <div className="flex items-center gap-2 mb-4">
               <div className="h-2 w-2 rounded-full bg-green-500"></div>
               <h3 className="text-sm font-semibold text-foreground">
@@ -471,9 +538,12 @@ export default function SprintStandup() {
               {ticketsByStatus.complete.map(ticket => (
                 <Card
                   key={ticket.id}
-                  className={`cursor-pointer hover-elevate active-elevate-2 transition-all ${
+                  draggable={true}
+                  onDragStart={() => handleDragStart(ticket.id)}
+                  onDragEnd={handleDragEnd}
+                  className={`cursor-move hover-elevate active-elevate-2 transition-all ${
                     selectedTicketId === ticket.id ? 'ring-2 ring-primary' : ''
-                  }`}
+                  } ${draggedTicketId === ticket.id ? 'opacity-50' : ''}`}
                   onClick={() => setSelectedTicketId(ticket.id)}
                   data-testid={`ticket-${ticket.key}`}
                 >
