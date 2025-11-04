@@ -401,7 +401,7 @@ export default function SprintStandup() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header with countdown and email button */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
           <div>
             <h2 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
               Sprint Standup Board
@@ -436,7 +436,7 @@ export default function SprintStandup() {
         </div>
 
         {/* Kanban Board - 3 columns */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-3 gap-6 mb-8 divide-x divide-gray-200">
           {/* To Do Column */}
           <div
             onDragOver={handleDragOver}
@@ -492,7 +492,7 @@ export default function SprintStandup() {
           <div
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, "inprogress")}
-            className="min-h-[200px]"
+            className="min-h-[200px] pl-6"
           >
             <div className="flex items-center gap-2 mb-4">
               <div className="h-2 w-2 rounded-full bg-blue-500"></div>
@@ -543,7 +543,7 @@ export default function SprintStandup() {
           <div
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, "complete")}
-            className="min-h-[200px]"
+            className="min-h-[200px] pl-6"
           >
             <div className="flex items-center gap-2 mb-4">
               <div className="h-2 w-2 rounded-full bg-green-500"></div>

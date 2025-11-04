@@ -237,7 +237,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6">
           <div>
             <h2 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
               Projects
@@ -245,34 +245,6 @@ export default function Dashboard() {
             <p className="text-sm text-muted-foreground mt-1">
               Track and manage your project status updates
             </p>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={handleGenerateNewsletter}
-              disabled={isGeneratingNewsletter}
-              variant="outline"
-              className="bg-white"
-              data-testid="button-generate-newsletter"
-            >
-              {isGeneratingNewsletter ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Newspaper className="h-5 w-5 mr-2" />
-                  Generate Newsletter
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              data-testid="button-add-project"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Add Project
-            </Button>
           </div>
         </div>
 
@@ -464,14 +436,44 @@ export default function Dashboard() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="active" data-testid="tab-active">
-              Active Projects ({activeProjects.length})
-            </TabsTrigger>
-            <TabsTrigger value="archived" data-testid="tab-archived">
-              Archived Projects ({archivedProjects.length})
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex gap-3">
+              <Button
+                onClick={handleGenerateNewsletter}
+                disabled={isGeneratingNewsletter}
+                variant="outline"
+                className="bg-white"
+                data-testid="button-generate-newsletter"
+              >
+                {isGeneratingNewsletter ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Newspaper className="h-5 w-5 mr-2" />
+                    Generate Newsletter
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => setShowForm(!showForm)}
+                data-testid="button-add-project"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Add Project
+              </Button>
+            </div>
+            <TabsList>
+              <TabsTrigger value="active" data-testid="tab-active">
+                Active Projects ({activeProjects.length})
+              </TabsTrigger>
+              <TabsTrigger value="archived" data-testid="tab-archived">
+                Archived Projects ({archivedProjects.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="active" className="mt-0">
             {isLoading ? (
