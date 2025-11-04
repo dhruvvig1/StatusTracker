@@ -176,18 +176,16 @@ export default function Dashboard() {
     const monthYear = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const subject = `Project Status Newsletter - ${monthYear}`;
     
-    // Use Outlook protocol - will open desktop Outlook if installed
-    // Only including subject as body is too long for URL parameters
-    const outlookUrl = `ms-outlook://compose?subject=${encodeURIComponent(subject)}`;
+    // Use mailto protocol - opens default email client (typically Outlook in corporate environments)
+    // Note: Body is included but may be truncated if too long
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(newsletter)}`;
     
-    // Try to open Outlook
-    window.location.href = outlookUrl;
+    window.location.href = mailtoUrl;
     
-    // Show instruction to copy content
     toast({
-      title: "Opening Outlook",
-      description: "Copy the newsletter content below and paste it into your email.",
-      duration: 5000,
+      title: "Opening email client",
+      description: "Your default email application will open with the newsletter content.",
+      duration: 4000,
     });
   };
 
