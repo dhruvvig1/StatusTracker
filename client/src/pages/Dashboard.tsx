@@ -153,7 +153,7 @@ export default function Dashboard() {
         <Card className="hover-elevate active-elevate-2 cursor-pointer h-full transition-all duration-200">
           <CardContent className="p-4">
             <div className="flex items-start justify-between mb-3">
-              <Badge variant={priority.variant} className="text-xs font-semibold">
+              <Badge variant={priority.variant} className="text-xs font-semibold bg-opacity-10">
                 {priority.label}
               </Badge>
               <MoreVertical className="h-4 w-4 text-muted-foreground" />
