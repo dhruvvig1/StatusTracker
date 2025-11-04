@@ -35,3 +35,37 @@ Keep the refined text brief but informative. Do not add information that wasn't 
     throw new Error("Failed to refine text");
   }
 }
+
+export async function generateNewsletter(projectsData: string): Promise<string> {
+  try {
+    const systemPrompt = `You are a professional newsletter writer for Visa's project management team.
+Your task is to create a comprehensive monthly project status newsletter.
+
+Format the newsletter with:
+1. **Executive Summary**: Brief overview of all active projects and key highlights
+2. **Project Updates**: For each project, provide:
+   - Project name and type
+   - Current status
+   - Key accomplishments and progress from the last month
+   - Notable updates or blockers
+3. **Key Highlights**: Bullet points of major achievements across all projects
+4. **Next Steps**: High-level action items and focus areas
+
+Use a professional, informative tone. Keep it concise but comprehensive.
+Format using clear headings, bullet points, and paragraphs for readability.
+Make sure the content is suitable for executive-level stakeholders.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        systemInstruction: systemPrompt,
+      },
+      contents: `Generate a monthly project status newsletter based on the following data:\n\n${projectsData}`,
+    });
+
+    return response.text || "Unable to generate newsletter at this time.";
+  } catch (error) {
+    console.error("Failed to generate newsletter with Gemini:", error);
+    throw new Error("Failed to generate newsletter");
+  }
+}

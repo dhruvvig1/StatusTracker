@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { refineStatusText } from "./gemini";
+import { refineStatusText, generateNewsletter } from "./gemini";
 import {
   insertProjectSchema,
   insertStatusUpdateSchema,
@@ -145,6 +145,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(200).json({ 
         refined: req.body.text,
         message: "AI refinement failed. Returning original text."
+      });
+    }
+  });
+
+  // Generate newsletter
+  app.get("/api/newsletter", async (req, res) => {
+    try {
+      // Check if Gemini API key is available
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(400).json({ 
+          error: "Gemini API key not configured. Newsletter generation requires AI capabilities."
+        });
+      }
+
+      // Get all projects and status updates
+      const projects = await storage.getProjects();
+      const allStatuses = await storage.getAllStatuses();
+
+      // Filter status updates from the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const recentStatuses = allStatuses.filter(status => {
+        const statusDate = new Date(status.createdAt);
+        return statusDate >= thirtyDaysAgo;
+      });
+
+      // Group statuses by project
+      const statusesByProject = new Map<string, typeof recentStatuses>();
+      recentStatuses.forEach(status => {
+        if (!statusesByProject.has(status.projectId)) {
+          statusesByProject.set(status.projectId, []);
+        }
+        statusesByProject.get(status.projectId)!.push(status);
+      });
+
+      // Build newsletter data structure
+      let newsletterData = `# Project Status Report - Last 30 Days\n\n`;
+      newsletterData += `Total Active Projects: ${projects.filter(p => p.status !== "Archived").length}\n`;
+      newsletterData += `Total Status Updates: ${recentStatuses.length}\n\n`;
+      newsletterData += `## Projects:\n\n`;
+
+      projects.forEach(project => {
+        const projectStatuses = statusesByProject.get(project.id) || [];
+        newsletterData += `### ${project.title}\n`;
+        newsletterData += `- Type: ${project.projectType}\n`;
+        newsletterData += `- Current Status: ${project.status}\n`;
+        newsletterData += `- Solution Architect: ${project.solutionArchitect}\n`;
+        newsletterData += `- Project Lead: ${project.projectLead}\n`;
+        newsletterData += `- Team: ${project.teamMembers}\n`;
+        
+        if (projectStatuses.length > 0) {
+          newsletterData += `- Recent Updates (${projectStatuses.length}):\n`;
+          projectStatuses.slice(0, 5).forEach((status, idx) => {
+            const date = new Date(status.createdAt).toLocaleDateString();
+            newsletterData += `  ${idx + 1}. [${date}] ${status.content}\n`;
+          });
+        } else {
+          newsletterData += `- No recent updates in the last 30 days\n`;
+        }
+        newsletterData += `\n`;
+      });
+
+      // Generate newsletter using Gemini
+      const newsletter = await generateNewsletter(newsletterData);
+      
+      res.json({ newsletter });
+    } catch (error) {
+      console.error("Error generating newsletter:", error);
+      res.status(500).json({ 
+        error: "Failed to generate newsletter. Please try again."
       });
     }
   });
