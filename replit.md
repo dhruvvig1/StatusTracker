@@ -12,10 +12,10 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 The frontend is built with React and TypeScript, using Vite as the build tool and Wouter for client-side routing. It follows a component-first architecture. The UI is based on shadcn/ui (New York style variant) with Radix UI primitives and styled using Tailwind CSS, adhering to Visa branding guidelines (blue header, white logo). State management is handled by TanStack Query for server state, with custom hooks for UI state. The design system is Linear-inspired, featuring modern card layouts, custom typography, and a responsive grid. Key components include:
-- **Header**: Sticky navigation with Visa branding and three main navigation links (Project Status, Newsletter, Sprint Standup) with active state highlighting
-- **Dashboard**: Active/Archived tabs and project cards
+- **Header**: Sticky navigation with Visa branding and two main navigation links on the right (Project Status, Sprint Standup) with active state highlighting
+- **Dashboard**: Active/Archived tabs, project cards, and newsletter generation button with dialog
 - **Project Detail**: Status updates and editing capabilities
-- **Newsletter**: Dedicated page for generating and emailing monthly summaries
+- **Newsletter**: Dedicated page for generating and emailing monthly summaries (also accessible via Dashboard button)
 - **Sprint Standup**: Kanban board with mock VASINNOV- tickets, speech-to-text, AI refinement, and countdown timer
 
 ### Backend Architecture
