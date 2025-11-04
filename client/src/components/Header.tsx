@@ -15,11 +15,8 @@ export function Header() {
       <Link href="/" data-testid="link-home">
         <img src={visaLogo} alt="Visa" className="h-8 cursor-pointer" data-testid="img-visa-logo" />
       </Link>
-      <h1 className="text-xl font-bold text-white" data-testid="text-app-title">
-        AIStandup
-      </h1>
       
-      <nav className="flex gap-6 ml-8">
+      <nav className="flex gap-6 ml-4">
         {navLinks.map((link) => (
           <Link key={link.href} href={link.href}>
             <span
@@ -35,6 +32,10 @@ export function Header() {
           </Link>
         ))}
       </nav>
+      
+      <h1 className="text-xl font-bold text-white ml-auto" data-testid="text-app-title">
+        AIStandup
+      </h1>
     </header>
   );
 }

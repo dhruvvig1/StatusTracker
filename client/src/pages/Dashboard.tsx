@@ -9,13 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -24,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Calendar, User, Plus, MoreVertical, MessageSquare, FileText, Mail, Loader2, Newspaper, Kanban } from "lucide-react";
+import { Calendar, User, Plus, MoreVertical, MessageSquare, FileText } from "lucide-react";
 import type { Project, InsertProject, StatusUpdate } from "@shared/schema";
 
 const getPriorityFromProjectType = (type: string) => {
@@ -74,9 +67,6 @@ const TeamAvatars = ({ teamMembers }: { teamMembers: string }) => {
 export default function Dashboard() {
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
-  const [showNewsletterDialog, setShowNewsletterDialog] = useState(false);
-  const [newsletter, setNewsletter] = useState("");
-  const [isGeneratingNewsletter, setIsGeneratingNewsletter] = useState(false);
   const [formData, setFormData] = useState<InsertProject>({
     title: "",
     projectType: "",
@@ -150,44 +140,6 @@ export default function Dashboard() {
     return allStatuses.filter(s => s.projectId === projectId).length;
   };
 
-  const handleGenerateNewsletter = async () => {
-    setIsGeneratingNewsletter(true);
-    try {
-      const response = await apiRequest("GET", "/api/newsletter");
-      setNewsletter(response.newsletter);
-      setShowNewsletterDialog(true);
-      toast({
-        title: "Newsletter generated",
-        description: "Your monthly project status newsletter is ready.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate newsletter. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingNewsletter(false);
-    }
-  };
-
-  const handleSendEmail = () => {
-    const today = new Date();
-    const monthYear = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    const subject = `Project Status Newsletter - ${monthYear}`;
-    
-    // Use mailto protocol - opens default email client (typically Outlook in corporate environments)
-    // Note: Body is included but may be truncated if too long
-    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(newsletter)}`;
-    
-    window.location.href = mailtoUrl;
-    
-    toast({
-      title: "Opening email client",
-      description: "Your default email application will open with the newsletter content.",
-      duration: 4000,
-    });
-  };
 
   const ProjectCard = ({ project }: { project: Project }) => {
     const priority = getPriorityFromProjectType(project.projectType);
@@ -248,75 +200,14 @@ export default function Dashboard() {
               Track and manage your project status updates
             </p>
           </div>
-          <div className="flex gap-3">
-            <Link href="/standup">
-              <Button variant="outline" data-testid="button-sprint-standup">
-                <Kanban className="h-5 w-5 mr-2" />
-                Sprint Standup
-              </Button>
-            </Link>
-            <Button
-              onClick={handleGenerateNewsletter}
-              disabled={isGeneratingNewsletter}
-              variant="outline"
-              className="bg-white"
-              data-testid="button-generate-newsletter"
-            >
-              {isGeneratingNewsletter ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Newspaper className="h-5 w-5 mr-2" />
-                  Generate Newsletter
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              data-testid="button-add-project"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Add Project
-            </Button>
-          </div>
+          <Button
+            onClick={() => setShowForm(!showForm)}
+            data-testid="button-add-project"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add Project
+          </Button>
         </div>
-
-        <Dialog open={showNewsletterDialog} onOpenChange={setShowNewsletterDialog}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Monthly Project Status Newsletter</DialogTitle>
-              <DialogDescription>
-                AI-generated summary of all projects and status updates from the last 30 days
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="bg-muted rounded-md p-6">
-                <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                  {newsletter}
-                </div>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowNewsletterDialog(false)}
-                  data-testid="button-close-newsletter"
-                >
-                  Close
-                </Button>
-                <Button
-                  onClick={handleSendEmail}
-                  data-testid="button-send-email"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Email
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {showForm && (
           <Card className="mb-6" data-testid="card-project-form">
