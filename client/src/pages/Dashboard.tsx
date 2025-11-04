@@ -175,10 +175,20 @@ export default function Dashboard() {
     const today = new Date();
     const monthYear = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const subject = `Project Status Newsletter - ${monthYear}`;
-    const body = newsletter;
     
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoLink;
+    // Use Outlook protocol - will open desktop Outlook if installed
+    // Only including subject as body is too long for URL parameters
+    const outlookUrl = `ms-outlook://compose?subject=${encodeURIComponent(subject)}`;
+    
+    // Try to open Outlook
+    window.location.href = outlookUrl;
+    
+    // Show instruction to copy content
+    toast({
+      title: "Opening Outlook",
+      description: "Copy the newsletter content below and paste it into your email.",
+      duration: 5000,
+    });
   };
 
   const ProjectCard = ({ project }: { project: Project }) => {
@@ -245,6 +255,7 @@ export default function Dashboard() {
               onClick={handleGenerateNewsletter}
               disabled={isGeneratingNewsletter}
               variant="outline"
+              className="bg-white"
               data-testid="button-generate-newsletter"
             >
               {isGeneratingNewsletter ? (
