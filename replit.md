@@ -18,6 +18,7 @@ Preferred communication style: Simple, everyday language.
 - **NEW: Status change functionality** - Project status can be updated via dropdown (In Progress, On Hold, Completed, Archived)
 - **NEW: Active/Archived tabs** - Dashboard now has tabs to filter between active and archived projects
 - **NEW: Improved UI design** - Modern cards with priority badges, team avatars, metadata icons
+- **NEW: Full project editing** - Edit button on project detail page opens dialog with all project fields, complete CRUD operations
 - Comprehensive end-to-end testing completed successfully
 
 ## System Architecture
@@ -66,9 +67,11 @@ Preferred communication style: Simple, everyday language.
   - Cards show priority badge, title, latest status preview, team avatars, comment count, modified date
 - **ProjectDetail**: 
   - Project title with status dropdown (In Progress, On Hold, Completed, Archived)
+  - Edit Project button opens dialog with comprehensive edit form
   - Metadata card showing Solution Architect, Project Lead, Team Members (with avatars), Stakeholders, Links
   - Status timeline (newest first)
   - Status input form with speech-to-text and AI refine features
+- **Edit Project Dialog**: Modal with all project fields pre-populated, supports updating title, type, architect, lead, team, stakeholders, and links
 - **Status Input**: Textarea with speech-to-text recording and AI refinement capabilities
 
 ### Backend Architecture
@@ -83,12 +86,13 @@ Preferred communication style: Simple, everyday language.
 **API Design**
 - RESTful API endpoints organized by resource
 - `/api/projects` - GET (list all), POST (create)
-- `/api/projects/:id` - GET (single project)
+- `/api/projects/:id` - GET (single project), PATCH (update full project with Zod validation)
 - `/api/projects/:id/status` - PATCH (update project status with Zod validation)
 - `/api/projects/:id/statuses` - GET (list statuses), POST (create status)
 - `/api/all-statuses` - GET (all statuses for dashboard previews)
 - `/api/refine-text` - POST (AI text refinement with Gemini)
 - Zod schema validation using drizzle-zod for request validation
+- Full project update validation: Uses insertProjectSchema to validate all fields
 - Status update validation: Only allows "In Progress", "On Hold", "Completed", "Archived"
 - Comprehensive error handling with graceful fallbacks
 
@@ -99,6 +103,7 @@ Preferred communication style: Simple, everyday language.
 - UUID-based primary keys for all entities
 - Chronological sorting for status updates (newest first)
 - Support for status updates via updateProjectStatus method
+- Support for full project updates via updateProject method (all fields except id and createdAt)
 
 **Database Schema**
 - `projects` table: Core project information (id, title, projectType, status, solutionArchitect, teamMembers, projectLead, stakeholders, wikiLink, usefulLinks, modified, createdAt)
@@ -132,8 +137,10 @@ Preferred communication style: Simple, everyday language.
 - When creating a project: Invalidates `/api/projects`
 - When creating a status: Invalidates `/api/projects/:id/statuses`, `/api/projects`, AND `/api/all-statuses`
 - When updating project status: Invalidates `/api/projects/:id` and `/api/projects`
+- When updating full project: Invalidates `/api/projects/:id` and `/api/projects`
 - Ensures dashboard latest status preview updates immediately
 - Ensures tab counts update when projects move between active/archived
+- Ensures project details and lists reflect changes instantly
 - Prevents stale data in UI
 
 ## External Dependencies
@@ -228,6 +235,17 @@ Preferred communication style: Simple, everyday language.
   - Dynamic tab counts (e.g., "Active Projects (16)")
   - Projects automatically move between tabs when status changes
 
+✅ **Full Project Editing**
+  - "Edit Project" button on project detail page
+  - Modal dialog with comprehensive edit form
+  - All project fields editable: title, project type, solution architect, project lead, team members, stakeholders, wiki link, useful links
+  - Form pre-populated with current project data
+  - Server-side validation using insertProjectSchema
+  - Immediate UI updates with cache invalidation
+  - Success/error toast notifications
+  - Loading states during save operation
+  - Changes persist across navigation
+
 ✅ **UI/UX Improvements**
   - Modern card design inspired by Linear/task management apps
   - Priority badges based on project type (HIGH/MEDIUM/LOW)
@@ -259,11 +277,13 @@ The following features are planned for future releases:
 - Implement PostgreSQL database for persistent data storage across sessions
 - Add actual Jira API integration to auto-populate project metadata from Jira links
 - Create project filtering and search functionality by category, lead, or status
-- Add project editing capabilities to update metadata (due dates, leads, developers)
 - Implement status update notifications and activity tracking dashboard
 - Add bulk actions for projects (bulk archive, bulk status change)
 - Implement project sorting (by date, priority, name)
 - Add project assignment and ownership features
+- Add project deletion functionality with confirmation dialog
+- Implement user authentication and role-based permissions
+- Add audit trail for project and status changes
 - Document caching expectations in contributor guidelines
 
 ## Development Workflow
