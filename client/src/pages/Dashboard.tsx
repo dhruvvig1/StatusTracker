@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Calendar, User, Plus, MoreVertical, MessageSquare, FileText, Mail, Loader2, Newspaper } from "lucide-react";
+import { Calendar, User, Plus, MoreVertical, MessageSquare, FileText, Mail, Loader2, Newspaper, Kanban } from "lucide-react";
 import type { Project, InsertProject, StatusUpdate } from "@shared/schema";
 
 const getPriorityFromProjectType = (type: string) => {
@@ -249,6 +249,12 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex gap-3">
+            <Link href="/standup">
+              <Button variant="outline" data-testid="button-sprint-standup">
+                <Kanban className="h-5 w-5 mr-2" />
+                Sprint Standup
+              </Button>
+            </Link>
             <Button
               onClick={handleGenerateNewsletter}
               disabled={isGeneratingNewsletter}
