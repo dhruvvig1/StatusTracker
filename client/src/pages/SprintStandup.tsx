@@ -592,7 +592,7 @@ export default function SprintStandup() {
         </div>
 
         {/* Selected Ticket Details & Status Input */}
-        <Card className="sticky bottom-0">
+        <Card className="sticky bottom-0 border-t-2 border-t-gray-200 mt-8">
           <CardHeader>
             <CardTitle className="text-base">
               {selectedTicket ? (
