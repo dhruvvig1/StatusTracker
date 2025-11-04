@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Calendar, User, Plus, ExternalLink, MessageSquare, FileText } from "lucide-react";
+import { Calendar, User, Plus, MoreVertical, MessageSquare, FileText } from "lucide-react";
 import type { Project, InsertProject, StatusUpdate } from "@shared/schema";
 
 const getPriorityFromProjectType = (type: string) => {
@@ -156,7 +156,7 @@ export default function Dashboard() {
               <Badge variant={priority.variant} className="text-xs font-semibold">
                 {priority.label}
               </Badge>
-              <ExternalLink className="h-4 w-4 text-muted-foreground" />
+              <MoreVertical className="h-4 w-4 text-muted-foreground" />
             </div>
 
             <h3 className="text-base font-semibold text-foreground line-clamp-2 mb-2">
