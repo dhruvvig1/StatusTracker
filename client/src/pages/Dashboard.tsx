@@ -23,15 +23,15 @@ import type { Project, InsertProject, StatusUpdate } from "@shared/schema";
 const getPriorityFromProjectType = (type: string) => {
   switch (type) {
     case "Security":
-      return { label: "HIGH", variant: "destructive" as const };
+      return { label: "HIGH", bgColor: "bg-red-100", textColor: "text-red-700" };
     case "Product Innovation":
-      return { label: "MEDIUM", variant: "default" as const };
+      return { label: "MEDIUM", bgColor: "bg-yellow-100", textColor: "text-yellow-700" };
     case "Productivity":
-      return { label: "LOW", variant: "secondary" as const };
+      return { label: "LOW", bgColor: "bg-green-100", textColor: "text-green-700" };
     case "Visa University":
-      return { label: "MEDIUM", variant: "default" as const };
+      return { label: "MEDIUM", bgColor: "bg-yellow-100", textColor: "text-yellow-700" };
     default:
-      return { label: "MEDIUM", variant: "default" as const };
+      return { label: "MEDIUM", bgColor: "bg-yellow-100", textColor: "text-yellow-700" };
   }
 };
 
@@ -153,9 +153,9 @@ export default function Dashboard() {
         <Card className="hover-elevate active-elevate-2 cursor-pointer h-full transition-all duration-200">
           <CardContent className="p-4">
             <div className="flex items-start justify-between mb-3">
-              <Badge variant={priority.variant} className="text-xs font-semibold bg-opacity-60">
+              <span className={`${priority.bgColor} ${priority.textColor} text-xs font-semibold px-2.5 py-0.5 rounded-md`}>
                 {priority.label}
-              </Badge>
+              </span>
               <MoreVertical className="h-4 w-4 text-muted-foreground" />
             </div>
 
