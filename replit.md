@@ -10,11 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (November 4, 2025)
 
-### Complete MVP Implementation
+### Complete MVP with Enhanced Features
 - Built full-stack application with React frontend and Express backend
 - Implemented all core features: project management, status tracking, speech-to-text, AI refinement
 - Integrated Gemini AI for intelligent status update formatting
 - Added official Visa branding with blue header and white logo
+- **NEW: Status change functionality** - Project status can be updated via dropdown (In Progress, On Hold, Completed, Archived)
+- **NEW: Active/Archived tabs** - Dashboard now has tabs to filter between active and archived projects
+- **NEW: Improved UI design** - Modern cards with priority badges, team avatars, metadata icons
 - Comprehensive end-to-end testing completed successfully
 
 ## System Architecture
@@ -31,7 +34,7 @@ Preferred communication style: Simple, everyday language.
 - shadcn/ui component library (New York style variant) with Radix UI primitives
 - Tailwind CSS for utility-first styling with custom design tokens
 - CSS variables for theming (HSL color system)
-- Comprehensive component library including forms, dialogs, cards, buttons, and data display components
+- Comprehensive component library including forms, dialogs, cards, buttons, tabs, and data display components
 - Visa branding: Blue header (#1434CB) with white logo
 
 **State Management**
@@ -41,16 +44,31 @@ Preferred communication style: Simple, everyday language.
 - Proper cache invalidation for all mutations
 
 **Design System**
-- Linear-inspired productivity design with custom typography (Inter primary, JetBrains Mono for code)
+- Linear-inspired productivity design with modern card layouts
+- Custom typography (Inter primary, JetBrains Mono for code)
 - Spacing system based on Tailwind units (2, 4, 6, 8)
 - Visa brand colors with custom primary color (#1434CB blue)
-- Responsive grid layouts with mobile-first approach
+- Priority badges based on project type:
+  - Security projects: HIGH priority (red badge)
+  - Product Innovation: MEDIUM priority (default badge)
+  - Productivity: LOW priority (secondary badge)
+  - Visa University: MEDIUM priority (default badge)
+- Team member avatars with initials (max 3 displayed + overflow count)
+- Responsive grid layouts: 1 column (mobile) → 2 (md) → 3 (lg) → 4 (xl)
 - Professional loading states, error handling, and empty states
 
 **Key Components**
 - **Header**: Sticky blue header with Visa logo and application title
-- **Dashboard**: Project intake form with comprehensive fields, grid layout of project cards showing metadata and latest status preview
-- **ProjectDetail**: Individual project view with metadata bar, status timeline (newest first), and status input form with speech-to-text and AI refine features
+- **Dashboard**: 
+  - Active/Archived tabs with dynamic counts
+  - Project intake form with comprehensive fields
+  - Grid layout of modern project cards
+  - Cards show priority badge, title, latest status preview, team avatars, comment count, modified date
+- **ProjectDetail**: 
+  - Project title with status dropdown (In Progress, On Hold, Completed, Archived)
+  - Metadata card showing Solution Architect, Project Lead, Team Members (with avatars), Stakeholders, Links
+  - Status timeline (newest first)
+  - Status input form with speech-to-text and AI refine features
 - **Status Input**: Textarea with speech-to-text recording and AI refinement capabilities
 
 ### Backend Architecture
@@ -60,15 +78,18 @@ Preferred communication style: Simple, everyday language.
 - ESM module system (type: "module")
 - TypeScript for type safety across the stack
 - Custom middleware for request logging and JSON parsing
+- Zod schema validation for all API endpoints
 
 **API Design**
 - RESTful API endpoints organized by resource
 - `/api/projects` - GET (list all), POST (create)
 - `/api/projects/:id` - GET (single project)
+- `/api/projects/:id/status` - PATCH (update project status with Zod validation)
 - `/api/projects/:id/statuses` - GET (list statuses), POST (create status)
 - `/api/all-statuses` - GET (all statuses for dashboard previews)
 - `/api/refine-text` - POST (AI text refinement with Gemini)
 - Zod schema validation using drizzle-zod for request validation
+- Status update validation: Only allows "In Progress", "On Hold", "Completed", "Archived"
 - Comprehensive error handling with graceful fallbacks
 
 **Data Storage Strategy**
@@ -77,12 +98,14 @@ Preferred communication style: Simple, everyday language.
 - Schema-first design with Drizzle ORM types
 - UUID-based primary keys for all entities
 - Chronological sorting for status updates (newest first)
+- Support for status updates via updateProjectStatus method
 
 **Database Schema**
-- `projects` table: Core project information (id, title, jiraLink, dueDate, lead, developer, category, createdAt)
+- `projects` table: Core project information (id, title, projectType, status, solutionArchitect, teamMembers, projectLead, stakeholders, wikiLink, usefulLinks, modified, createdAt)
 - `statusUpdates` table: Status entries linked to projects (id, projectId, content, commenter, createdAt)
 - Foreign key relationship: statusUpdates.projectId → projects.id
 - Automatic timestamp management (createdAt)
+- Project status values: "In Progress", "On Hold", "Completed", "Archived"
 
 ### AI Integration
 
@@ -108,7 +131,9 @@ Preferred communication style: Simple, everyday language.
 - Automatic cache invalidation on mutations
 - When creating a project: Invalidates `/api/projects`
 - When creating a status: Invalidates `/api/projects/:id/statuses`, `/api/projects`, AND `/api/all-statuses`
+- When updating project status: Invalidates `/api/projects/:id` and `/api/projects`
 - Ensures dashboard latest status preview updates immediately
+- Ensures tab counts update when projects move between active/archived
 - Prevents stale data in UI
 
 ## External Dependencies
@@ -146,7 +171,7 @@ Preferred communication style: Simple, everyday language.
 - @google/genai: Gemini AI SDK
 
 **UI Components**
-- @radix-ui/*: Accessible component primitives (20+ components)
+- @radix-ui/*: Accessible component primitives (20+ components including Tabs, Avatar)
 - tailwind-merge, clsx: CSS class management
 - class-variance-authority: Component variant management
 - lucide-react: Icon library
@@ -188,17 +213,45 @@ Preferred communication style: Simple, everyday language.
 ✅ Toast notifications for user feedback
 ✅ Cache invalidation for real-time updates
 
+### New Features (November 4, 2025)
+✅ **Status Change Functionality**
+  - Interactive dropdown in project detail page
+  - Four status options: In Progress, On Hold, Completed, Archived
+  - Server-side Zod validation for status values
+  - Immediate UI updates with cache invalidation
+  - Success toast notifications
+
+✅ **Active/Archived Tabs**
+  - Tab navigation on dashboard
+  - Active tab shows projects where status ≠ "Archived"
+  - Archived tab shows projects where status = "Archived"
+  - Dynamic tab counts (e.g., "Active Projects (16)")
+  - Projects automatically move between tabs when status changes
+
+✅ **UI/UX Improvements**
+  - Modern card design inspired by Linear/task management apps
+  - Priority badges based on project type (HIGH/MEDIUM/LOW)
+  - Team member avatars with initials
+  - Avatar groups showing max 3 members + overflow count
+  - Metadata icons: Comment count, Modified date
+  - 4-column grid on xl screens (improved density)
+  - Enhanced project detail page with avatar chips
+  - Better visual hierarchy and spacing throughout
+
 ### Testing & Quality
-- End-to-end testing completed successfully
+- End-to-end testing completed successfully for all features
 - All user journeys verified:
   - Project creation and listing
   - Status update workflow
   - Timeline display and ordering
   - Dashboard preview updates
+  - Status change and tab switching
+  - Active/Archived filtering
   - AI refinement (with graceful fallback)
   - Navigation and routing
 - No blocking bugs or errors
 - Production-ready code quality
+- All interactive elements have data-testid attributes
 
 ## Future Enhancements
 
@@ -208,8 +261,9 @@ The following features are planned for future releases:
 - Create project filtering and search functionality by category, lead, or status
 - Add project editing capabilities to update metadata (due dates, leads, developers)
 - Implement status update notifications and activity tracking dashboard
-- Add server-side validation for projectId matching in routes
-- Implement automated regression testing
+- Add bulk actions for projects (bulk archive, bulk status change)
+- Implement project sorting (by date, priority, name)
+- Add project assignment and ownership features
 - Document caching expectations in contributor guidelines
 
 ## Development Workflow
@@ -219,6 +273,7 @@ The following features are planned for future releases:
 3. Hot module reloading enabled for rapid development
 4. Frontend and backend served on same port via Vite proxy
 5. Type checking with TypeScript across full stack
+6. End-to-end testing via Playwright for quality assurance
 
 ## Notes
 
@@ -227,3 +282,6 @@ The following features are planned for future releases:
 - AI refinement gracefully falls back to original text if Gemini API unavailable
 - All forms include HTML5 validation for required fields
 - Responsive design works across mobile, tablet, and desktop
+- Status changes are validated server-side to prevent invalid values
+- Tab filtering is client-side for instant response
+- 17 preloaded Visa projects from CSV with realistic mock data

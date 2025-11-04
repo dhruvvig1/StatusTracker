@@ -6,6 +6,7 @@ import {
   insertProjectSchema,
   insertStatusUpdateSchema,
 } from "@shared/schema";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all projects
@@ -53,6 +54,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating project:", error);
       res.status(400).json({ error: "Invalid project data" });
+    }
+  });
+
+  // Update project status
+  app.patch("/api/projects/:id/status", async (req, res) => {
+    try {
+      const statusSchema = z.object({
+        status: z.enum(["In Progress", "On Hold", "Completed", "Archived"]),
+      });
+      
+      const validatedData = statusSchema.parse(req.body);
+      const project = await storage.updateProjectStatus(req.params.id, validatedData.status);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error("Error updating project status:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid status value" });
+      }
+      res.status(500).json({ error: "Failed to update project status" });
     }
   });
 

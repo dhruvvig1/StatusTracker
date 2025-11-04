@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -14,11 +17,56 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Calendar, User, Code2, Tag, Plus, ExternalLink, Users } from "lucide-react";
+import { Calendar, User, Plus, ExternalLink, MessageSquare, FileText } from "lucide-react";
 import type { Project, InsertProject, StatusUpdate } from "@shared/schema";
+
+const getPriorityFromProjectType = (type: string) => {
+  switch (type) {
+    case "Security":
+      return { label: "HIGH", variant: "destructive" as const };
+    case "Product Innovation":
+      return { label: "MEDIUM", variant: "default" as const };
+    case "Productivity":
+      return { label: "LOW", variant: "secondary" as const };
+    case "Visa University":
+      return { label: "MEDIUM", variant: "default" as const };
+    default:
+      return { label: "MEDIUM", variant: "default" as const };
+  }
+};
+
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const TeamAvatars = ({ teamMembers }: { teamMembers: string }) => {
+  const members = teamMembers.split(",").map((m) => m.trim()).slice(0, 3);
+  return (
+    <div className="flex -space-x-2">
+      {members.map((member, i) => (
+        <Avatar key={i} className="h-7 w-7 border-2 border-background">
+          <AvatarFallback className="text-xs">{getInitials(member)}</AvatarFallback>
+        </Avatar>
+      ))}
+      {teamMembers.split(",").length > 3 && (
+        <Avatar className="h-7 w-7 border-2 border-background">
+          <AvatarFallback className="text-xs">
+            +{teamMembers.split(",").length - 3}
+          </AvatarFallback>
+        </Avatar>
+      )}
+    </div>
+  );
+};
 
 export default function Dashboard() {
   const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
   const [formData, setFormData] = useState<InsertProject>({
     title: "",
     projectType: "",
@@ -41,6 +89,9 @@ export default function Dashboard() {
   const { data: allStatuses = [] } = useQuery<StatusUpdate[]>({
     queryKey: ["/api/all-statuses"],
   });
+
+  const activeProjects = projects.filter(p => p.status !== "Archived");
+  const archivedProjects = projects.filter(p => p.status === "Archived");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,18 +131,69 @@ export default function Dashboard() {
   const getLatestStatus = (projectId: string) => {
     const projectStatuses = allStatuses.filter(s => s.projectId === projectId);
     if (projectStatuses.length === 0) {
-      return "No status updates yet";
+      return null;
     }
-    return projectStatuses[0].content;
+    return projectStatuses[0];
+  };
+
+  const getStatusCount = (projectId: string) => {
+    return allStatuses.filter(s => s.projectId === projectId).length;
+  };
+
+  const ProjectCard = ({ project }: { project: Project }) => {
+    const priority = getPriorityFromProjectType(project.projectType);
+    const latestStatus = getLatestStatus(project.id);
+    const statusCount = getStatusCount(project.id);
+
+    return (
+      <Link
+        href={`/projects/${project.id}`}
+        data-testid={`card-project-${project.id}`}
+      >
+        <Card className="hover-elevate active-elevate-2 cursor-pointer h-full transition-all duration-200">
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between mb-3">
+              <Badge variant={priority.variant} className="text-xs font-semibold">
+                {priority.label}
+              </Badge>
+              <ExternalLink className="h-4 w-4 text-muted-foreground" />
+            </div>
+
+            <h3 className="text-base font-semibold text-foreground line-clamp-2 mb-2">
+              {project.title}
+            </h3>
+
+            <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+              {latestStatus ? latestStatus.content : "No updates yet. Click to add the first status update."}
+            </p>
+
+            <div className="flex items-center justify-between">
+              <TeamAvatars teamMembers={project.teamMembers} />
+              
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  <span>{statusCount}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <FileText className="h-3.5 w-3.5" />
+                  <span>{project.modified}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
   };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
-              Active Projects
+              Projects
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
               Track and manage your project status updates
@@ -259,89 +361,75 @@ export default function Dashboard() {
           </Card>
         )}
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-4">
-                  <div className="h-6 bg-muted rounded mb-3" />
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded w-3/4" />
-                    <div className="h-4 bg-muted rounded w-1/2" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : projects.length === 0 ? (
-          <Card className="p-12">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-                <Plus className="h-8 w-8 text-muted-foreground" />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="active" data-testid="tab-active">
+              Active Projects ({activeProjects.length})
+            </TabsTrigger>
+            <TabsTrigger value="archived" data-testid="tab-archived">
+              Archived Projects ({archivedProjects.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active" className="mt-0">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-4">
+                      <div className="h-6 bg-muted rounded mb-3" />
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted rounded w-3/4" />
+                        <div className="h-4 bg-muted rounded w-1/2" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-              <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Get started by adding your first project
-              </p>
-              <Button onClick={() => setShowForm(true)} data-testid="button-add-first-project">
-                <Plus className="h-5 w-5 mr-2" />
-                Add Project
-              </Button>
-            </div>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {projects.map((project) => (
-              <Link
-                key={project.id}
-                href={`/projects/${project.id}`}
-                data-testid={`card-project-${project.id}`}
-              >
-                <Card className="hover-elevate active-elevate-2 cursor-pointer h-full transition-shadow duration-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-foreground line-clamp-2">
-                          {project.title}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {project.projectType}
-                        </p>
-                      </div>
-                      <ExternalLink className="h-4 w-4 text-muted-foreground ml-2 flex-shrink-0" />
-                    </div>
+            ) : activeProjects.length === 0 ? (
+              <Card className="p-12">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                    <Plus className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">No active projects</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Get started by adding your first project
+                  </p>
+                  <Button onClick={() => setShowForm(true)} data-testid="button-add-first-project">
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Project
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {activeProjects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
-                    <div className="grid grid-cols-1 gap-2 mb-3">
-                      <div className="flex items-center gap-2 text-sm">
-                        <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-muted-foreground text-xs">SA:</span>
-                        <span className="text-foreground truncate">{project.solutionArchitect}</span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-sm">
-                        <Code2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-muted-foreground text-xs">Lead:</span>
-                        <span className="text-foreground truncate">{project.projectLead}</span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-sm">
-                        <Tag className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-foreground">{project.status}</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t">
-                      <p className="text-xs text-muted-foreground mb-1">Latest Status</p>
-                      <p className="text-sm text-foreground line-clamp-2">
-                        {getLatestStatus(project.id)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
+          <TabsContent value="archived" className="mt-0">
+            {archivedProjects.length === 0 ? (
+              <Card className="p-12">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">No archived projects</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Projects marked as archived will appear here
+                  </p>
+                </div>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {archivedProjects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

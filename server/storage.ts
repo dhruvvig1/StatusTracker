@@ -11,6 +11,7 @@ export interface IStorage {
   getProjects(): Promise<Project[]>;
   getProject(id: string): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
+  updateProjectStatus(id: string, status: string): Promise<Project | undefined>;
 
   // Status Updates
   getAllStatuses(): Promise<StatusUpdate[]>;
@@ -267,6 +268,19 @@ export class MemStorage implements IStorage {
     };
     this.projects.set(id, project);
     return project;
+  }
+
+  async updateProjectStatus(id: string, status: string): Promise<Project | undefined> {
+    const project = this.projects.get(id);
+    if (!project) {
+      return undefined;
+    }
+    const updatedProject = {
+      ...project,
+      status,
+    };
+    this.projects.set(id, updatedProject);
+    return updatedProject;
   }
 
   async getAllStatuses(): Promise<StatusUpdate[]> {
