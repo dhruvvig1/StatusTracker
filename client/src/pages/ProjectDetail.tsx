@@ -49,6 +49,7 @@ export default function ProjectDetail() {
         queryKey: ["/api/projects", id, "statuses"],
       });
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/all-statuses"] });
       setStatusText("");
       toast({
         title: "Status added",
