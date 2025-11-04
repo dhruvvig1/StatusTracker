@@ -324,8 +324,12 @@ export default function SprintStandup() {
     });
   };
 
-  const handleDragStart = (ticketId: string) => {
+  const handleDragStart = (e: DragEvent, ticketId: string) => {
     setDraggedTicketId(ticketId);
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', ticketId);
+    }
   };
 
   const handleDragEnd = () => {
@@ -334,14 +338,27 @@ export default function SprintStandup() {
 
   const handleDragOver = (e: DragEvent) => {
     e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move';
+    }
   };
 
   const handleDrop = (e: DragEvent, newStatus: "todo" | "inprogress" | "complete") => {
     e.preventDefault();
     
-    if (!draggedTicketId) return;
+    let ticketId = draggedTicketId;
+    
+    // Try to get ticket ID from dataTransfer if available
+    if (e.dataTransfer) {
+      const transferredId = e.dataTransfer.getData('text/plain');
+      if (transferredId) {
+        ticketId = transferredId;
+      }
+    }
+    
+    if (!ticketId) return;
 
-    const draggedTicket = tickets.find(t => t.id === draggedTicketId);
+    const draggedTicket = tickets.find(t => t.id === ticketId);
     if (!draggedTicket) return;
 
     // Only update if status actually changed
@@ -352,7 +369,7 @@ export default function SprintStandup() {
 
     setTickets(prevTickets =>
       prevTickets.map(ticket =>
-        ticket.id === draggedTicketId
+        ticket.id === ticketId
           ? { ...ticket, status: newStatus }
           : ticket
       )
@@ -436,8 +453,8 @@ export default function SprintStandup() {
               {ticketsByStatus.todo.map(ticket => (
                 <Card
                   key={ticket.id}
-                  draggable={true}
-                  onDragStart={() => handleDragStart(ticket.id)}
+                  draggable="true"
+                  onDragStart={(e) => handleDragStart(e, ticket.id)}
                   onDragEnd={handleDragEnd}
                   className={`cursor-move hover-elevate active-elevate-2 transition-all ${
                     selectedTicketId === ticket.id ? 'ring-2 ring-primary' : ''
@@ -487,8 +504,8 @@ export default function SprintStandup() {
               {ticketsByStatus.inprogress.map(ticket => (
                 <Card
                   key={ticket.id}
-                  draggable={true}
-                  onDragStart={() => handleDragStart(ticket.id)}
+                  draggable="true"
+                  onDragStart={(e) => handleDragStart(e, ticket.id)}
                   onDragEnd={handleDragEnd}
                   className={`cursor-move hover-elevate active-elevate-2 transition-all ${
                     selectedTicketId === ticket.id ? 'ring-2 ring-primary' : ''
@@ -538,8 +555,8 @@ export default function SprintStandup() {
               {ticketsByStatus.complete.map(ticket => (
                 <Card
                   key={ticket.id}
-                  draggable={true}
-                  onDragStart={() => handleDragStart(ticket.id)}
+                  draggable="true"
+                  onDragStart={(e) => handleDragStart(e, ticket.id)}
                   onDragEnd={handleDragEnd}
                   className={`cursor-move hover-elevate active-elevate-2 transition-all ${
                     selectedTicketId === ticket.id ? 'ring-2 ring-primary' : ''
