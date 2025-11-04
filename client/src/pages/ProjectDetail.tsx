@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -27,8 +36,9 @@ import {
   ExternalLink,
   Users,
   Link as LinkIcon,
+  Edit,
 } from "lucide-react";
-import type { Project, StatusUpdate, InsertStatusUpdate } from "@shared/schema";
+import type { Project, StatusUpdate, InsertStatusUpdate, InsertProject } from "@shared/schema";
 
 const getInitials = (name: string) => {
   return name
@@ -44,6 +54,19 @@ export default function ProjectDetail() {
   const [statusText, setStatusText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState<InsertProject>({
+    title: "",
+    projectType: "",
+    status: "In Progress",
+    solutionArchitect: "",
+    teamMembers: "",
+    projectLead: "",
+    stakeholders: "",
+    wikiLink: "",
+    usefulLinks: "",
+    modified: new Date().toISOString().split('T')[0],
+  });
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
@@ -104,6 +127,45 @@ export default function ProjectDetail() {
       });
     },
   });
+
+  const updateProjectMutation = useMutation({
+    mutationFn: async (data: InsertProject) => {
+      return await apiRequest("PATCH", `/api/projects/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      setIsEditDialogOpen(false);
+      toast({
+        title: "Project updated",
+        description: "Project details have been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update project. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (project && isEditDialogOpen) {
+      setEditFormData({
+        title: project.title,
+        projectType: project.projectType,
+        status: project.status,
+        solutionArchitect: project.solutionArchitect,
+        teamMembers: project.teamMembers,
+        projectLead: project.projectLead,
+        stakeholders: project.stakeholders,
+        wikiLink: project.wikiLink,
+        usefulLinks: project.usefulLinks,
+        modified: project.modified,
+      });
+    }
+  }, [project, isEditDialogOpen]);
 
   useEffect(() => {
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
@@ -230,6 +292,11 @@ export default function ProjectDetail() {
     updateStatusMutation.mutate(newStatus);
   };
 
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProjectMutation.mutate(editFormData);
+  };
+
   if (projectLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -304,6 +371,163 @@ export default function ProjectDetail() {
                 </div>
               </div>
             </div>
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" data-testid="button-edit-project">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Project
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Edit Project Details</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleUpdateProject} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="edit-title">Project Title *</Label>
+                      <Input
+                        id="edit-title"
+                        value={editFormData.title}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, title: e.target.value })
+                        }
+                        required
+                        data-testid="input-edit-title"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-projectType">Project Type *</Label>
+                      <Select
+                        value={editFormData.projectType}
+                        onValueChange={(value) =>
+                          setEditFormData({ ...editFormData, projectType: value })
+                        }
+                        required
+                      >
+                        <SelectTrigger id="edit-projectType" data-testid="select-edit-project-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Product Innovation">Product Innovation</SelectItem>
+                          <SelectItem value="Productivity">Productivity</SelectItem>
+                          <SelectItem value="Security">Security</SelectItem>
+                          <SelectItem value="Visa University">Visa University</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-solutionArchitect">Solution Architect *</Label>
+                      <Input
+                        id="edit-solutionArchitect"
+                        value={editFormData.solutionArchitect}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, solutionArchitect: e.target.value })
+                        }
+                        required
+                        data-testid="input-edit-solution-architect"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-projectLead">Project Lead *</Label>
+                      <Input
+                        id="edit-projectLead"
+                        value={editFormData.projectLead}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, projectLead: e.target.value })
+                        }
+                        required
+                        data-testid="input-edit-project-lead"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <Label htmlFor="edit-teamMembers">Team Members *</Label>
+                      <Input
+                        id="edit-teamMembers"
+                        value={editFormData.teamMembers}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, teamMembers: e.target.value })
+                        }
+                        required
+                        data-testid="input-edit-team-members"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <Label htmlFor="edit-stakeholders">Stakeholders *</Label>
+                      <Input
+                        id="edit-stakeholders"
+                        value={editFormData.stakeholders}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, stakeholders: e.target.value })
+                        }
+                        required
+                        data-testid="input-edit-stakeholders"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-wikiLink">Wiki Link *</Label>
+                      <Input
+                        id="edit-wikiLink"
+                        type="url"
+                        value={editFormData.wikiLink}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, wikiLink: e.target.value })
+                        }
+                        required
+                        data-testid="input-edit-wiki-link"
+                        className="font-mono text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-usefulLinks">Useful Links *</Label>
+                      <Input
+                        id="edit-usefulLinks"
+                        type="url"
+                        value={editFormData.usefulLinks}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, usefulLinks: e.target.value })
+                        }
+                        required
+                        data-testid="input-edit-useful-links"
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 justify-end pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsEditDialogOpen(false)}
+                      data-testid="button-cancel-edit"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={updateProjectMutation.isPending}
+                      data-testid="button-save-edit"
+                    >
+                      {updateProjectMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Changes"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <Card className="mb-6">

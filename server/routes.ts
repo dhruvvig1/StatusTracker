@@ -57,6 +57,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update full project details
+  app.patch("/api/projects/:id", async (req, res) => {
+    try {
+      const validatedData = insertProjectSchema.parse(req.body);
+      const project = await storage.updateProject(req.params.id, validatedData);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid project data" });
+      }
+      res.status(500).json({ error: "Failed to update project" });
+    }
+  });
+
   // Update project status
   app.patch("/api/projects/:id/status", async (req, res) => {
     try {
