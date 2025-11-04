@@ -10,23 +10,17 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function refineStatusText(text: string): Promise<string> {
   try {
-    const systemPrompt = `You are a professional project status update writer. 
-Your task is to refine and improve status updates for project standup meetings.
-Make the text clear, concise, and professional while maintaining the original meaning.
-Focus on:
-- Clear structure (what was done, what's in progress, any blockers)
-- Professional tone
-- Action-oriented language
-- Removing filler words and redundancy
-
-Keep the refined text brief but informative. Do not add information that wasn't in the original text.`;
+    const systemPrompt = `Fix spelling and grammar errors in the user's text. Reword unclear sentences to be clearer. 
+Do not add any new information, ideas, or structure. 
+Do not make it more professional or formal. 
+Just fix what the user wrote and make it readable.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       config: {
         systemInstruction: systemPrompt,
       },
-      contents: `Refine this status update:\n\n${text}`,
+      contents: text,
     });
 
     return response.text || text;
