@@ -13,6 +13,7 @@ import {
   Clock,
   Mail,
   CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 
 interface JiraTicket {
@@ -119,6 +120,7 @@ export default function SprintStandup() {
   const [isRefining, setIsRefining] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(getTimeUntilDeadline());
   const [draggedTicketId, setDraggedTicketId] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
@@ -324,6 +326,19 @@ export default function SprintStandup() {
     });
   };
 
+  const handleSyncWithJira = () => {
+    setIsSyncing(true);
+    
+    // Simulate Jira sync for 10 seconds
+    setTimeout(() => {
+      setIsSyncing(false);
+      toast({
+        title: "Jira synced",
+        description: "Successfully synchronized with Jira.",
+      });
+    }, 10000);
+  };
+
   const handleDragStart = (e: DragEvent, ticketId: string) => {
     setDraggedTicketId(ticketId);
     if (e.dataTransfer) {
@@ -400,7 +415,7 @@ export default function SprintStandup() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header with countdown and email button */}
+        {/* Header with countdown and buttons */}
         <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
           <div>
             <h2 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
@@ -411,19 +426,41 @@ export default function SprintStandup() {
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {/* Countdown Timer */}
-            <div className="flex items-center gap-2 px-4 py-2 bg-card border rounded-md" data-testid="countdown-timer">
-              <Clock className="h-5 w-5 text-primary" />
-              <div className="text-right">
-                <div className="text-xs text-muted-foreground">Until 12pm CST</div>
-                <div className="text-lg font-semibold text-foreground">
-                  {timeRemaining.hours}h {timeRemaining.minutes}m
+            <Card className="shadow-sm">
+              <CardContent className="flex items-center gap-3 px-4 py-3">
+                <Clock className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Until 12pm CST</div>
+                  <div className="text-lg font-semibold text-foreground" data-testid="countdown-timer">
+                    {timeRemaining.hours}h {timeRemaining.minutes}m
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
             
-            {/* Send Email Button */}
+            {/* Sync with Jira Button */}
+            <Button
+              onClick={handleSyncWithJira}
+              variant="outline"
+              disabled={isSyncing}
+              data-testid="button-sync-jira"
+            >
+              {isSyncing ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-5 w-5 mr-2" />
+                  Sync with Jira
+                </>
+              )}
+            </Button>
+            
+            {/* Send Summary Button */}
             <Button
               onClick={handleSendEmail}
               variant="default"
