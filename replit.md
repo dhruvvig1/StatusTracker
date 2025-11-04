@@ -19,6 +19,7 @@ Preferred communication style: Simple, everyday language.
 - **NEW: Active/Archived tabs** - Dashboard now has tabs to filter between active and archived projects
 - **NEW: Improved UI design** - Modern cards with priority badges, team avatars, metadata icons
 - **NEW: Full project editing** - Edit button on project detail page opens dialog with all project fields, complete CRUD operations
+- **NEW: Newsletter generation** - AI-powered monthly newsletter summarizing all projects and status updates from last 30 days with email integration
 - Comprehensive end-to-end testing completed successfully
 
 ## System Architecture
@@ -62,6 +63,7 @@ Preferred communication style: Simple, everyday language.
 - **Header**: Sticky blue header with Visa logo and application title
 - **Dashboard**: 
   - Active/Archived tabs with dynamic counts
+  - Generate Newsletter button for AI-powered monthly summaries
   - Project intake form with comprehensive fields
   - Grid layout of modern project cards
   - Cards show priority badge, title, latest status preview, team avatars, comment count, modified date
@@ -72,6 +74,7 @@ Preferred communication style: Simple, everyday language.
   - Status timeline (newest first)
   - Status input form with speech-to-text and AI refine features
 - **Edit Project Dialog**: Modal with all project fields pre-populated, supports updating title, type, architect, lead, team, stakeholders, and links
+- **Newsletter Dialog**: AI-generated newsletter preview with Send Email button for mailto: integration
 - **Status Input**: Textarea with speech-to-text recording and AI refinement capabilities
 
 ### Backend Architecture
@@ -91,6 +94,7 @@ Preferred communication style: Simple, everyday language.
 - `/api/projects/:id/statuses` - GET (list statuses), POST (create status)
 - `/api/all-statuses` - GET (all statuses for dashboard previews)
 - `/api/refine-text` - POST (AI text refinement with Gemini)
+- `/api/newsletter` - GET (generate AI-powered newsletter from last 30 days of activity)
 - Zod schema validation using drizzle-zod for request validation
 - Full project update validation: Uses insertProjectSchema to validate all fields
 - Status update validation: Only allows "In Progress", "On Hold", "Completed", "Archived"
@@ -116,9 +120,14 @@ Preferred communication style: Simple, everyday language.
 
 **Google Gemini AI**
 - Integration via @google/genai SDK
-- Text refinement feature for status updates
+- **Text refinement feature**: Improves status updates for standup reports
+- **Newsletter generation**: Creates executive-level monthly summaries with:
+  - Executive summary of all active projects
+  - Detailed project updates with recent activity
+  - Key highlights and achievements
+  - Next steps and action items
 - Uses gemini-2.5-flash model for fast processing
-- System prompt engineering for professional standup report writing
+- System prompt engineering for professional standup report writing and newsletter formatting
 - Focuses on clarity, conciseness, and action-oriented language
 - Graceful fallback: Returns original text when API key is missing or API fails
 - No runtime errors - always returns usable response
@@ -245,6 +254,19 @@ Preferred communication style: Simple, everyday language.
   - Success/error toast notifications
   - Loading states during save operation
   - Changes persist across navigation
+
+✅ **Newsletter Generation & Email Integration**
+  - "Generate Newsletter" button on dashboard header
+  - AI-powered newsletter generation using Gemini
+  - Filters and summarizes status updates from last 30 days
+  - Groups updates by project with detailed context
+  - Executive-level formatting with multiple sections
+  - Newsletter preview dialog with formatted content
+  - "Send Email" button opens default email client via mailto: link
+  - Pre-filled subject line with current month/year
+  - Pre-filled body with complete newsletter content
+  - Loading states during AI generation (~15 seconds)
+  - Error handling for missing API keys or generation failures
 
 ✅ **UI/UX Improvements**
   - Modern card design inspired by Linear/task management apps
